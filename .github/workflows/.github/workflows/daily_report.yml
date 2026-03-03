@@ -1,0 +1,31 @@
+name: 毎朝6時 業界レポート送信
+
+on:
+  schedule:
+    # 日本時間 毎朝6:00 = UTC 21:00 (前日)
+    - cron: '0 21 * * *'
+  workflow_dispatch:  # 手動実行ボタンも有効化
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 依存パッケージをインストール
+        run: pip install anthropic
+
+      - name: レポート生成・メール送信
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          REPORT_RECIPIENT_EMAIL: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
+        run: python generate_report.py
